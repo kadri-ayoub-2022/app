@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="378dp"
+        android:layout_height="315dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.484"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.084"
+        app:srcCompat="@drawable/notes_de_musique" />
+
+    <ImageView
+        android:id="@+id/playView"
+        android:layout_width="73dp"
+        android:layout_height="101dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintVertical_bias="0.3"
+        app:srcCompat="@drawable/play" />
+
+    <ImageView
+        android:id="@+id/right"
+        android:layout_width="99dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="94dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.414"
+        app:layout_constraintStart_toEndOf="@+id/playView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/right" />
+
+    <ImageView
+        android:id="@+id/left"
+        android:layout_width="100dp"
+        android:layout_height="78dp"
+        android:layout_marginTop="94dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/playView"
+        app:layout_constraintHorizontal_bias="0.55"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/left" />
+
+    <ImageView
+        android:id="@+id/adore"
+        android:layout_width="28dp"
+        android:layout_height="36dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playView"
+        app:layout_constraintVertical_bias="0.275"
+        app:srcCompat="@drawable/amour" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="160dp"
+        android:layout_height="45dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:gravity="center"
+        android:text="@string/song"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/adore" />
+
+    <ImageView
+        android:id="@+id/pauseView"
+        android:layout_width="76dp"
+        android:layout_height="106dp"
+        android:contentDescription="@android:string/fingerprint_icon_content_description"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintVertical_bias="0.282"
+        app:srcCompat="@drawable/pause" />
+
+    <ImageView
+        android:id="@+id/non_adore"
+        android:layout_width="28dp"
+        android:layout_height="37dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playView"
+        app:layout_constraintVertical_bias="0.27"
+        app:srcCompat="@drawable/coeur" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

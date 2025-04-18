@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">tp1</string>
+    <string name="song">there is no song</string>
+    <string name="titre">Titre</string>
+    <string name="artiste">Artiste</string>
+    <string name="paroles">Paroles</string>
+</resources>
