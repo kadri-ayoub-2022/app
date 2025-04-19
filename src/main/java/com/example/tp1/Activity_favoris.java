@@ -8,9 +8,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class Activity_favoris extends AppCompatActivity implements SongAdapter.OnItemClickListener {
 
@@ -18,6 +19,9 @@ public class Activity_favoris extends AppCompatActivity implements SongAdapter.O
     private static final String SONG_LIST_KEY = "song_list";
     private ArrayList<Song> favoriteSongs;
     private SongAdapter adapter;
+
+    private SongDatabase db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +36,12 @@ public class Activity_favoris extends AppCompatActivity implements SongAdapter.O
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // en cas de recreation ta3 view  ghadi tjib la chanson mn sauvgarde
-        if (savedInstanceState != null) {
-            favoriteSongs = (ArrayList<Song>) savedInstanceState.getSerializable(SONG_LIST_KEY);
-        } else {
-            favoriteSongs = new ArrayList<>(getFakeFavoriteSongs());
-        }
+        db = Room.databaseBuilder(getApplicationContext(), SongDatabase.class, "song_database")
+                .allowMainThreadQueries()
+                .build();
+
+        favoriteSongs = new ArrayList<>(db.songDao().getAllSongs());
+
 
         // Création de l'adapter avec gestion du long clic
         adapter = new SongAdapter(favoriteSongs, this, (song, position) -> {
@@ -45,6 +49,8 @@ public class Activity_favoris extends AppCompatActivity implements SongAdapter.O
                     .setTitle("Confirmation")
                     .setMessage("Supprimer \"" + song.getTitle() + "\" des favoris ?")
                     .setPositiveButton("Oui", (dialog, which) -> {
+                        Song songToRemove = favoriteSongs.get(position);
+                        db.songDao().delete(songToRemove);
                         favoriteSongs.remove(position);
                         adapter.notifyItemRemoved(position);
                     })
@@ -74,13 +80,6 @@ public class Activity_favoris extends AppCompatActivity implements SongAdapter.O
         }
     }
 
-    private List<Song> getFakeFavoriteSongs() {
-        List<Song> songs = new ArrayList<>();
-        songs.add(new Song("Imagine", "John Lennon", "Imagine all the people..."));
-        songs.add(new Song("Shape of You", "Ed Sheeran", "I'm in love with the shape of you..."));
-        songs.add(new Song("Hallelujah", "Leonard Cohen", "I heard there was a secret chord..."));
-        return songs;
-    }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {

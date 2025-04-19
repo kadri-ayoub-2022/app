@@ -12,19 +12,35 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import java.util.HashSet;
-import java.util.Set;
+import androidx.room.Room;
+
+import android.widget.Toast;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
     private boolean isPlaying = false;
 
-    private boolean isAdore = false;
     private int currentPosition = 0;
     private TextView textView;
+
+    private SongDatabase db;
+
+    private int[] songList = {
+            R.raw.dakir,
+            R.raw.song
+    };
+
+    private String[] songTitles = {
+            "dakir.mp3",
+            "song.mp3"
+    };
+
+    private int currentSongIndex = 0;
+
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -51,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        db = Room.databaseBuilder(getApplicationContext(), SongDatabase.class, "song_database")
+                .allowMainThreadQueries()
+                .build();
+
         ImageView pauseView = findViewById(R.id.pauseView);
         ImageView playView = findViewById(R.id.playView);
         ImageView leftView = findViewById(R.id.left);
@@ -59,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView NON_adoreView = findViewById(R.id.non_adore);
         textView = findViewById(R.id.textView);
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.dakir);
+        mediaPlayer = MediaPlayer.create(this, songList[currentSongIndex]);
 
         playView.setOnClickListener(v -> startMusic(playView, pauseView, leftView, rightView));
         pauseView.setOnClickListener(v -> pauseMusic(playView, pauseView, leftView, rightView));
@@ -74,18 +94,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         adoreView.setOnClickListener(v -> {
-            isAdore = false;
-            adoreView.setVisibility(View.INVISIBLE);
-            NON_adoreView.setVisibility(View.VISIBLE);
-            removeFromFavorites("music.mp3");
+            removeFromFavorites();
+            updateAdoreIcons();
         });
 
         NON_adoreView.setOnClickListener(v -> {
-            isAdore = true;
-            NON_adoreView.setVisibility(View.INVISIBLE);
-            adoreView.setVisibility(View.VISIBLE);
-            addToFavorites("music.mp3");
+            addToFavorites();
+            updateAdoreIcons();
         });
+
 
         View.OnLongClickListener longClickListener = v -> {
 //            pauseMusic(playView, pauseView, leftView, rightView);
@@ -101,33 +118,42 @@ public class MainActivity extends AppCompatActivity {
             if (isPlaying) {
                 mediaPlayer.seekTo(currentPosition);
                 mediaPlayer.start();
-                textView.setText("Lecture : music.mp3");
+                textView.setText("Lecture " +songTitles[currentSongIndex]);
                 playView.setVisibility(View.INVISIBLE);
                 pauseView.setVisibility(View.VISIBLE);
                 leftView.setVisibility(View.VISIBLE);
                 rightView.setVisibility(View.VISIBLE);
             } else {
-                textView.setText("Pause : music.mp3");
+                textView.setText("Pause : "+songTitles[currentSongIndex]);
                 playView.setVisibility(View.VISIBLE);
                 pauseView.setVisibility(View.INVISIBLE);
                 leftView.setVisibility(View.INVISIBLE);
                 rightView.setVisibility(View.INVISIBLE);
             }
-
-            if(isAdore){
-                adoreView.setVisibility(View.INVISIBLE);
-                NON_adoreView.setVisibility(View.VISIBLE);
-                removeFromFavorites("music.mp3");
-            }else{
-                NON_adoreView.setVisibility(View.INVISIBLE);
-                adoreView.setVisibility(View.VISIBLE);
-                addToFavorites("music.mp3");
-
-            }
+            
         }
 
         adoreView.setOnLongClickListener(longClickListener);
         NON_adoreView.setOnLongClickListener(longClickListener);
+
+        leftView.setOnClickListener(v -> {
+            if (currentSongIndex < songList.length - 1) {
+                currentSongIndex++;
+                playSong(currentSongIndex, playView, pauseView, leftView, rightView);
+            } else {
+                Toast.makeText(this, "Aucune chanson suivante", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        rightView.setOnClickListener(v -> {
+            if (currentSongIndex > 0) {
+                currentSongIndex--;
+                playSong(currentSongIndex, playView, pauseView, leftView, rightView);
+            } else {
+                Toast.makeText(this, "Aucune chanson précédente", Toast.LENGTH_SHORT).show();
+            }
+        });
+        updateAdoreIcons();
     }
 
     private void startMusic(ImageView playView, ImageView pauseView, ImageView leftView, ImageView rightView) {
@@ -135,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.seekTo(currentPosition);
             mediaPlayer.start();
             isPlaying = true;
-            textView.setText("Lecture : music.mp3");
+            textView.setText("Lecture :"+songTitles[currentSongIndex] );
             playView.setVisibility(View.INVISIBLE);
             pauseView.setVisibility(View.VISIBLE);
             leftView.setVisibility(View.VISIBLE);
@@ -148,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.pause();
             currentPosition = mediaPlayer.getCurrentPosition();
             isPlaying = false;
-            textView.setText("Pause : music.mp3");
+            textView.setText("Pause :"+songTitles[currentSongIndex]);
             pauseView.setVisibility(View.INVISIBLE);
             playView.setVisibility(View.VISIBLE);
             leftView.setVisibility(View.INVISIBLE);
@@ -183,19 +209,75 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addToFavorites(String songTitle) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> favorites = prefs.getStringSet("favorites", new HashSet<>());
-        Set<String> updatedFavorites = new HashSet<>(favorites);
-        updatedFavorites.add(songTitle);
-        prefs.edit().putStringSet("favorites", updatedFavorites).apply();
+    private void addToFavorites() {
+        String title = songTitles[currentSongIndex];
+        Song existing = db.songDao().getSongByTitle(title);
+        if (existing == null) {
+            Song song = new Song(title, "Artiste inconnu", "Paroles inconnues");
+            db.songDao().insert(song);
+            Toast.makeText(this, "Ajouté aux favoris", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void removeFromFavorites(String songTitle) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        Set<String> favorites = prefs.getStringSet("favorites", new HashSet<>());
-        Set<String> updatedFavorites = new HashSet<>(favorites);
-        updatedFavorites.remove(songTitle);
-        prefs.edit().putStringSet("favorites", updatedFavorites).apply();
+
+    private void removeFromFavorites() {
+        String title = songTitles[currentSongIndex];
+        Song song = db.songDao().getSongByTitle(title);
+        if (song != null) {
+            db.songDao().delete(song);
+            Toast.makeText(this, "Supprimé des favoris", Toast.LENGTH_SHORT).show();
+        }
     }
+
+
+    private void playSong(int index, ImageView playView, ImageView pauseView, ImageView leftView, ImageView rightView) {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+        }
+
+        currentSongIndex = index;
+        mediaPlayer = MediaPlayer.create(this, songList[currentSongIndex]);
+        updateAdoreIcons();
+        mediaPlayer.start();
+        isPlaying = true;
+
+        textView.setText("Lecture : " + songTitles[currentSongIndex]);
+
+        playView.setVisibility(View.INVISIBLE);
+        pauseView.setVisibility(View.VISIBLE);
+        leftView.setVisibility(View.VISIBLE);
+        rightView.setVisibility(View.VISIBLE);
+
+        mediaPlayer.setOnCompletionListener(mp -> {
+            isPlaying = false;
+            textView.setText("Fin de lecture");
+            playView.setVisibility(View.VISIBLE);
+            pauseView.setVisibility(View.INVISIBLE);
+            leftView.setVisibility(View.INVISIBLE);
+            rightView.setVisibility(View.INVISIBLE);
+        });
+    }
+
+    private void updateAdoreIcons() {
+        ImageView adoreView = findViewById(R.id.adore);
+        ImageView NON_adoreView = findViewById(R.id.non_adore);
+
+        String currentTitle = songTitles[currentSongIndex];
+        Song song = db.songDao().getSongByTitle(currentTitle);
+
+        if (song != null) {
+            // Song is in favorites
+            adoreView.setVisibility(View.VISIBLE);
+            NON_adoreView.setVisibility(View.INVISIBLE);
+        } else {
+            // Song is not in favorites
+            NON_adoreView.setVisibility(View.VISIBLE);
+            adoreView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+
+
+
 }
