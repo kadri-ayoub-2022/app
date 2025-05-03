@@ -50,5 +50,7 @@ dependencies {
     implementation("com.airbnb.android:lottie:6.3.0")
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)
+    implementation("androidx.media:media:1.6.0")
+
 
 }
